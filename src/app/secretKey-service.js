@@ -1,21 +1,18 @@
-const JwtService = require('./JwtService');
+const bcrypt = require('bcrypt');
 
-describe('JwtService', () => {
-  const secretKey = 'secreto'; 
-  const jwtService = new JwtService(secretKey);
+class SecretKeyService {
+  constructor() {
+  }
 
-  it('debería generar y verificar un token correctamente', () => {
-    const payload = { userId: 1, email: 'usuario@example.com' };
-    const token = jwtService.generateToken(payload);
-    expect(token).toBeDefined();
+  async generateSecretKey(password) {
+    const saltRounds = 10;
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    return hashedPassword;
+  }
 
-    const decodedPayload = jwtService.verifyToken(token);
-    expect(decodedPayload.userId).toBe(payload.userId);
-    expect(decodedPayload.email).toBe(payload.email);
-  });
+  async comparePasswordWithSecretKey(password, secretKey) {
+    return await bcrypt.compare(password, secretKey);
+  }
+}
 
-  it('debería lanzar un error al verificar un token inválido', () => {
-    const token = 'tokenInvalido';
-    expect(() => jwtService.verifyToken(token)).toThrowError('Token inválido');
-  });
-});
+module.exports = SecretKeyService;
